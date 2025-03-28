@@ -1,0 +1,63 @@
+services:
+  application:
+    build:
+      context: application
+      dockerfile: Dockerfile
+    container_name: Application
+    depends_on:
+      - postgres
+      - mysql
+      - mongodb
+      - dynamodb
+    environment:
+      - DATABASE=${DATABASE}
+      - USER=${USER}
+      - PASSWORD=${PASSWORD}
+    networks:
+      - internal-network
+
+  postgres:
+    image: postgres:latest
+    container_name: PostgreSQL
+    environment:
+      POSTGRES_DB: ${DATABASE}
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+    ports:
+      - 5432:${POSTGRES_PORT}
+    networks:
+      - internal-network
+
+  mysql:
+    image: mysql:latest
+    container_name: MySQL
+    environment:
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${USER}
+      MYSQL_PASSWORD: ${PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+    ports:
+      - 3306:${MYSQL_PORT}
+    networks:
+      - internal-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: MongoDB
+    ports:
+      - 27017:${MONGO_PORT}
+    networks:
+      - internal-network
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: DynamoDB
+    command: "-jar DynamoDBLocal.jar -sharedDb"
+    ports:
+      - 8000:${DYNAMO_PORT}
+    networks:
+      - internal-network
+
+networks:
+  internal-network:
+    driver: bridge
