@@ -14,15 +14,23 @@ git clone https://github.com/jakub-gorzkowski/dbms_comparison.git
 
 2. Create the following `.env` file within the project directory:
 ```env
+# Credentials
 DATABASE=your_database_name
 USER=your_username
 PASSWORD=strong_password
 ROOT_PASSWORD=root_password
 
-POSTGRES_PORT=your_postgres_port
-MYSQL_PORT=your_mysql_port
-MONGO_PORT=your_mongo_port
-DYNAMO_PORT=your_dynamo_port
+# Inner ports
+POSTGRES_INNER_PORT=your_postgres_port
+MYSQL_INNER_PORT=your_mysql_port
+MONGO_INNER_PORT=your_mongo_port
+DYNAMO_INNER_PORT=your_dynamo_port
+
+# Outer ports
+POSTGRES_OUTER_PORT=your_postgres_port
+MYSQL_OUTER_PORT=your_mysql_port
+MONGO_OUTER_PORT=your_mongo_port
+DYNAMO_OUTER_PORT=your_dynamo_port
 ```
 
 3. Build images:
