@@ -1,6 +1,7 @@
 plugins {
-    id("java")
-    id("application")
+    java
+    application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "org.example"
@@ -15,6 +16,7 @@ dependencies {
     implementation("com.mysql:mysql-connector-j:9.2.0")
     implementation("org.mongodb:mongodb-driver-sync:5.4.0")
     implementation("software.amazon.awssdk:dynamodb:2.31.9")
+    implementation("com.zaxxer:HikariCP:5.1.0")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
