@@ -8,7 +8,7 @@ COPY gradle /app/gradle
 COPY src /app/src
 COPY build.gradle.kts /app/
 
-RUN gradle build --no-daemon
+RUN gradle shadowJar --no-daemon
 
 FROM openjdk:24
 
