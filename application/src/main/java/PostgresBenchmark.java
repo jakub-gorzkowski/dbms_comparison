@@ -10,7 +10,6 @@ public class PostgresBenchmark {
     private final List<String> directions = Arrays.asList("Wjazd", "Wyjazd");
     private final List<String> firstNames = Arrays.asList("Jan", "Anna", "Piotr", "Maria", "Andrzej", "Katarzyna", "Tomasz", "Aleksandra");
     private final List<String> lastNames = Arrays.asList("Nowak", "Kowalski", "Wiśniewski", "Wójcik", "Kowalczyk", "Kamiński", "Lewandowski", "Zieliński");
-    private final List<String> ranks = Arrays.asList("Szeregowy", "Kapral", "Sierżant", "Podporucznik", "Porucznik", "Kapitan", "Major", "Pułkownik");
     private final Random random = new Random();
 
     private Map<String, Integer> cachedOddzialyIds = new HashMap<>();
@@ -427,50 +426,53 @@ public class PostgresBenchmark {
     public long benchmarkBatchDeleteKontroleGraniczne(int numberOfDeletes, int batchSize) {
         long startTime = System.currentTimeMillis();
 
-        List<String> przejsciaNazwy = new ArrayList<>(cachedPrzejsciaIds.keySet());
-        if (przejsciaNazwy.isEmpty()) {
-            throw new IllegalStateException("Brak przejść granicznych w bazie danych.");
-        }
-
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
 
-            int currentDeletes = 0;
-            while (currentDeletes < numberOfDeletes) {
-                int batchDeletes = 0;
-                while (batchDeletes < batchSize && currentDeletes < numberOfDeletes) {
-                    String przejscieNazwa = przejsciaNazwy.get(random.nextInt(przejsciaNazwy.size()));
-                    Integer przejscieId = cachedPrzejsciaIds.get(przejscieNazwa);
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("CREATE TEMP TABLE ids_to_delete AS " +
+                        "SELECT id FROM kontrole_graniczne " +
+                        "ORDER BY id " +
+                        "LIMIT " + numberOfDeletes);
 
-                    int daysAgo = random.nextInt(365);
-                    LocalDate endDate = LocalDate.now().minusDays(daysAgo);
-                    LocalDate startDate = endDate.minusDays(7);
+                stmt.execute("CREATE INDEX ON ids_to_delete (id)");
 
+                int deletedTotal = 0;
+                while (deletedTotal < numberOfDeletes) {
                     try (PreparedStatement pstmt = conn.prepareStatement(
-                            "DELETE FROM kontrole_graniczne WHERE przejscie_id = ? AND data BETWEEN ? AND ?")) {
+                            "WITH batch AS (" +
+                                    "    SELECT id FROM ids_to_delete " +
+                                    "    LIMIT ? " +
+                                    "    FOR UPDATE SKIP LOCKED" +
+                                    ") " +
+                                    "DELETE FROM kontrole_graniczne " +
+                                    "WHERE id IN (SELECT id FROM batch)")) {
 
-                        pstmt.setInt(1, przejscieId);
-                        pstmt.setDate(2, java.sql.Date.valueOf(startDate));
-                        pstmt.setDate(3, java.sql.Date.valueOf(endDate));
+                        pstmt.setInt(1, batchSize);
+                        int deleted = pstmt.executeUpdate();
+                        if (deleted == 0) break;
 
-                        int deletedRows = pstmt.executeUpdate();
-                        batchDeletes += deletedRows;
-                        currentDeletes += deletedRows;
+                        deletedTotal += deleted;
+                        conn.commit();
+
+                        if (deletedTotal % 10000 == 0) {
+                            System.out.println("Usunięto " + deletedTotal + " rekordów...");
+                        }
                     }
                 }
-                conn.commit();
+
+                stmt.execute("DROP TABLE ids_to_delete");
             }
 
-            conn.setAutoCommit(true);
+            conn.commit();
         } catch (SQLException e) {
-            System.err.println("Błąd podczas usuwania kontroli: " + e.getMessage());
+            System.err.println("Błąd podczas usuwania: " + e.getMessage());
             e.printStackTrace();
             return -1;
         }
 
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime;
-
         System.out.println("Benchmark operacji DELETE zakończony. Czas wykonania: " + executionTime + " ms");
         return executionTime;
     }
