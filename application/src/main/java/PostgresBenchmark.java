@@ -287,7 +287,6 @@ public class PostgresBenchmark {
                     "ORDER BY k.data DESC LIMIT 100";
 
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                int totalQueries = 0;
 
                 for (int i = 0; i < numberOfQueries; i++) {
                     int daysAgo = random.nextInt(365);
@@ -506,10 +505,11 @@ public class PostgresBenchmark {
             batchDeleteTime = benchmarkBatchDeleteKontroleGraniczne(numberOfBatchDeletes, batchSize);
         }
 
-        System.out.println("Czas wykonania operacji Insert: " + batchInsertTime + "ms");
-        System.out.println("Czas wykonania operacji Select: " + batchSelectTime + "ms");
-        System.out.println("Czas wykonania operacji Update: " + batchUpdateTime + "ms");
-        System.out.println("Czas wykonania operacji Delete: " + batchDeleteTime + "ms");
+        System.out.println("\nPodsumowanie czasów wykonania:");
+        System.out.println("Insert: " + batchInsertTime + "ms");
+        System.out.println("Select: " + batchSelectTime + "ms");
+        System.out.println("Update: " + batchUpdateTime + "ms");
+        System.out.println("Delete: " + batchDeleteTime + "ms");
     }
 
     public void close() {
