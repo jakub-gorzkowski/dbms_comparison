@@ -10,7 +10,7 @@ CREATE TABLE rodzaje_dokumentow (
     UNIQUE KEY (nazwa)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE rodzaje_przejsci (
+CREATE TABLE rodzaje_przejsc (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nazwa VARCHAR(100) NOT NULL,
     UNIQUE KEY (nazwa)
@@ -69,5 +69,5 @@ CREATE TABLE przejscia_rodzaje (
     rodzaj_id INT NOT NULL,
     PRIMARY KEY (przejscie_id, rodzaj_id),
     FOREIGN KEY (przejscie_id) REFERENCES przejscia_graniczne(id) ON DELETE CASCADE,
-    FOREIGN KEY (rodzaj_id) REFERENCES rodzaje_przejsci(id) ON DELETE CASCADE
+    FOREIGN KEY (rodzaj_id) REFERENCES rodzaje_przejsc(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
