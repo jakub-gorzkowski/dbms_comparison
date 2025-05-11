@@ -6,6 +6,12 @@ public class Main {
         int numberOfTests = 1_000_000;
         int batchSize = 1_000;
 
+        try {
+            Thread.sleep(20_000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         System.out.println("\n=== PostgreSQL Benchmark ===");
         try {
             PostgresBenchmark postgresBenchmark = new PostgresBenchmark(database, username, password);
@@ -22,7 +28,7 @@ public class Main {
             e.printStackTrace();
         }
 
-/*        System.out.println("\n=== MySQL Benchmark ===");
+        System.out.println("\n=== MySQL Benchmark ===");
         try {
             MySQLBenchmark mySQLBenchmark = new MySQLBenchmark(database, username, password);
             mySQLBenchmark.runBenchmark(
@@ -36,7 +42,7 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Wystąpił błąd podczas benchmarku MySQL: " + e.getMessage());
             e.printStackTrace();
-        }*/
+        }
 
         System.out.println("\n=== MongoDB Benchmark ===");
         try {
